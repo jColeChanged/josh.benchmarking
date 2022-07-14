@@ -43,11 +43,11 @@ Put `[josh.benchmarking "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your pr
 
 FIXME: and add an example usage that actually makes sense:
 
-    $ lein josh.benchmarking
+    $ lein benchmark
 
 ## License
 
-Copyright © 2022 FIXME
+Copyright © 2022 Joshua Cole
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at
