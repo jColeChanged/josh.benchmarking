@@ -1,5 +1,8 @@
 # josh.benchmarking
 
+WARNING: This library isn't done baking. It isn't recommended for use 
+if you aren't me. That said, to understand what I'm going for, read on.
+
 A library author ought to know the impact that their changes have on their libaries performance, different libraries which tackle the same problem ought to be able to share common benchmarks, and the community at large ought to have insight into the performance of each release so its members can understand whether the philosophy of a library with regard to performance aligns with their own performance needs.
 
 Instead benchmarks are a thing of niche GitHub repos, contentious debate in blog posts, and very often can be found nestled inside `(comment)` blocks. There is a lot of wonderful things to say about REPL-driven development, for example, it gives fast feedback. However, ad-hoc solutions where you have to expend effort to generate value aren't ideal. It would be better to automate benchmarking such that we produce [technical income][ti].
