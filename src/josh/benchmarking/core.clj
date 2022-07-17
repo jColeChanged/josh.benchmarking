@@ -4,8 +4,8 @@
             [tech.v3.dataset :as ds]
             [clojure.string :as string]
             [taoensso.timbre :as timbre :refer [debug  info]]))
+  
 
-;; Collect all benchmarks
 (defn is-benchmark?
   "Returns true when a function is a benchmark."
   [d]
@@ -21,10 +21,6 @@
   "Returns all the benchmarks in a namespace."
   [ns]
   (map ->benchmark (filter is-benchmark? (ns-map ns))))
-
-
-
-
 
 (defn git-commit-id
   []
@@ -93,10 +89,11 @@
     (info :writing-dataset filename)
     (ds/write! merged-dataset filename)))
 
-
 (defn -main
-  [namespaces]
-  (info :benchmarking-started)
+  [settings namespaces] 
+  (info :benchmarking-started 
+        :namspaces namespaces
+        :settings settings)
   (let [benchmark-configuration
         {:database-config {:filename "benchmarks.edn"}
          :benchmarks (mapcat collect-benchmarks namespaces)
