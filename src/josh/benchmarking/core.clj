@@ -1,13 +1,33 @@
-(ns josh.benchmarking
+(ns josh.benchmarking.core
   (:require [clojure.java.shell :refer [sh]]
             [criterium.core :refer [benchmark report-result]]
             [tech.v3.dataset :as ds]
             [clojure.string :as string]
-            [taoensso.timbre :as timbre
-             :refer [debug  info]]))
+            [taoensso.timbre :as timbre :refer [debug  info]]))
+
+;; Collect all benchmarks
+(defn is-benchmark?
+  "Returns true when a function is a benchmark."
+  [d]
+  (:is-benchmark (meta (second d))))
+
+(def ->benchmark
+  "Converts a ns-map entry to a benchmark map."
+  (comp
+   (partial zipmap [:name :benchmark])
+   (juxt (comp str first) second)))
+
+(defn collect-benchmarks
+  "Returns all the benchmarks in a namespace."
+  [ns]
+  (map ->benchmark (filter is-benchmark? (ns-map ns))))
+
+
+
+
 
 (defn git-commit-id
-  [] 
+  []
   (string/trim (:out (sh "git" "rev-parse" "HEAD"))))
 
 (defn timestamp
@@ -21,11 +41,6 @@
 (defn version-stamp-interceptor
   [event]
   (merge event (version-information)))
-
-(def benchmark-configuration
-  {:database-config {:filename "benchmarks.edn"}
-   :benchmarks [{:name "Benchmark name" :benchmark #(Thread/sleep 1000)}]
-   :event-interceptors [version-stamp-interceptor]})
 
 (defn run-benchmark
   [bc]
@@ -79,12 +94,12 @@
     (ds/write! merged-dataset filename)))
 
 
-;; (:dataset (load-dataset benchmark-configuration))
-
 (defn -main
-  []
+  [namespaces]
   (info :benchmarking-started)
-  (write-dataset
-   (benching (load-dataset benchmark-configuration))))
-
-(-main)
+  (let [benchmark-configuration
+        {:database-config {:filename "benchmarks.edn"}
+         :benchmarks (mapcat collect-benchmarks namespaces)
+         :event-interceptors [version-stamp-interceptor]}]
+    (write-dataset
+     (benching (load-dataset benchmark-configuration)))))
