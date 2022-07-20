@@ -2,6 +2,7 @@
   (:require [clojure.java.shell :refer [sh]]
             [criterium.core :refer [benchmark report-result]]
             [tech.v3.dataset :as ds]
+            [tech.v3.dataset.rolling :as ds-roll]
             [clojure.string :as string]
             [taoensso.timbre :as timbre :refer [debug  info]]))
   
@@ -38,6 +39,32 @@
   [event]
   (merge event (version-information)))
 
+(defn label-upper [field] (keyword (str (name field) "-ub")))
+(defn label-lower [field] (keyword (str (name field) "-lb")))
+(defn center [[stat [_ _]]] stat)
+(defn upper [[stat [_ upper]]] (+ stat upper))
+(defn lower [[stat [lower _]]] (+ stat lower))
+
+(defn flatten-stat
+  "Flattens a stat field."
+  [field]
+  (fn [coll]
+    (-> coll
+        (assoc (label-upper field) (upper coll))
+        (assoc (label-lower field) (lower coll))
+        (assoc field (center coll)))))
+
+(defn flatten-benchmark
+  "Flattens a benchmark."
+  [coll]
+  (-> coll
+      ((flatten-stat :mean))
+      ((flatten-stat :sample-mean))
+      ((flatten-stat :variance))
+      ((flatten-stat :sample-variance))
+      ((flatten-stat :upper-q))
+      ((flatten-stat :lower-q))))
+
 (defn run-benchmark
   [bc]
   (info :benchmarking (:name bc))
@@ -57,7 +84,6 @@
                 (map run-benchmark)
                 (map (apply comp (:event-interceptors config))))
                (:benchmarks config))))
-
 
 (defn file?
   "Return whether the file exists."
@@ -89,6 +115,26 @@
     (info :writing-dataset filename)
     (ds/write! merged-dataset filename)))
 
+(defn recent-comparison
+  [dataset new-benchmark]
+  (-> dataset 
+      (ds/group-by :name)
+      (ds-roll/last :mean))
+  new-benchmark)
+
+(defn local-comparison 
+  [dataset new-benchmark]
+  (-> dataset 
+      (ds/group-by :name)
+      (ds-roll/rolling dataset :mean))
+  new-benchmark)
+
+(defn compare-benchmarks 
+  [dataset benchmark]
+  (info (recent-comparison dataset benchmark))
+  (info (local-comparison dataset benchmark))
+  benchmark)
+
 (defn -main
   [settings namespaces] 
   (info :benchmarking-started 
@@ -97,6 +143,8 @@
   (let [benchmark-configuration
         {:database-config {:filename "benchmarks.edn"}
          :benchmarks (mapcat collect-benchmarks namespaces)
-         :event-interceptors [version-stamp-interceptor]}]
+         :event-interceptors [version-stamp-interceptor 
+                              flatten-benchmark
+                              compare-benchmarks]}]
     (write-dataset
      (benching (load-dataset benchmark-configuration)))))

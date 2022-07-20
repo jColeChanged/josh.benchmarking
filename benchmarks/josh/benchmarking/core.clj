@@ -4,6 +4,3 @@
 (def ^:is-benchmark thread-sleep #(Thread/sleep 1000))
 
 thread-sleep
-
-(meta thread-sleep)
-
