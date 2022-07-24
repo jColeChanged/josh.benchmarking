@@ -147,7 +147,7 @@
         {:database-config {:filename "benchmarks.edn"}
          :benchmarks (mapcat collect-benchmarks namespaces)
          :event-interceptors [version-stamp-interceptor 
-                              flatten-benchmark
-                              compare-benchmarks]}]
+                              flatten-benchmark]}]
+;;                              compare-benchmarks]}]
     (write-dataset
      (benching (load-dataset benchmark-configuration)))))

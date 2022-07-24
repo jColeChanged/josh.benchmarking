@@ -11,12 +11,14 @@
 (defn get-benchmark-dependency
   "Returns the plugins entry in the plugins key for this library."
   [project]
-  (ffilter #(= `josh.benchmarking/josh.benchmarking (first %)) (:plugins project)))
+  (let [dep (ffilter #(= `josh.benchmarking/josh.benchmarking (first %)) (:plugins project))]
+    (if (nil? dep) [] [dep])))
 
 (defn get-benchmark-sourcepaths [project]
   (get-in project [:benchmark-paths] ["benchmarks/"]))
 
 (defn benchmark-namespaces
+  "Return all the namespaces on the classpath in sorted order."
   [project]
   (sort
     (namespaces-on-classpath
@@ -24,34 +26,19 @@
       (map io/file (get-benchmark-sourcepaths project)))))
 
 
-
-(defn parse-args
-  "Takes the command args as input and returns a vector with two elements. The
-   first is a set of the specified environments (the name key in each
-   environment) and the second is a map of the options given."
-  [args]
-  (let [[environments options] (split-with #(not (.startsWith % "-")) args)]
-    [(into #{} environments)
-     (into {} (map (fn [opt-str] (vector (keyword (apply str
-                                                         (filter #(not= \- %)
-                                                                 opt-str)))
-                                         true)) options))]))
-
 (defn benchmark
   "Run the performance tests in the :benchmarks-path directory."
   [project & args]
-  (let [benchmark-profile (merge {:source-paths (get-benchmark-sourcepaths project) 
-                                  :dependencies [(get-benchmark-dependency project)]}
+  (let [benchmark-profile (merge {:source-paths (get-benchmark-sourcepaths project)
+                                  :dependencies (get-benchmark-dependency project)}
                                  (get-in project [:profiles :josh.benchmarking]))
         project (project/merge-profiles project [benchmark-profile])
-        [specified-environments options] (parse-args args)
-        environments [{:namespaces (benchmark-namespaces project)}]
-        _ (println (:source-paths project))
-        ]
-    (doseq [{:keys [name profiles namespaces fixtures] :as environment}
-            environments]
+        options {}
+        environments [{:namespaces (benchmark-namespaces project)}]]
+    (doseq [{:keys [profiles namespaces fixtures]} environments]
       (println "Running benchmarks...")
       (println "======================")
+      (pprint/pprint project)
       (let [project (project/merge-profiles project profiles)
             action `(do
                       (when (seq '~namespaces)
