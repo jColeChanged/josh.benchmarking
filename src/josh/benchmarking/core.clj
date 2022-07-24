@@ -10,7 +10,10 @@
 (defn is-benchmark?
   "Returns true when a function is a benchmark."
   [d]
-  (:is-benchmark (meta (second d))))
+  {:post [(boolean? %)]}
+  (contains? (meta d) :is-benchmark))
+
+(def ns-is-benchmark? (comp is-benchmark? second))
 
 (def ->benchmark
   "Converts a ns-map entry to a benchmark map."
@@ -21,7 +24,7 @@
 (defn collect-benchmarks
   "Returns all the benchmarks in a namespace."
   [ns]
-  (map ->benchmark (filter is-benchmark? (ns-map ns))))
+  (map ->benchmark (filter ns-is-benchmark? (ns-map ns))))
 
 (defn git-commit-id
   []
