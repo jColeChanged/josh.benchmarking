@@ -50,4 +50,6 @@
     (testing "Tests that a benchmark run returns results"
       (is (map? benchmark-results)))
     (testing "Tests that flattening a single stat works." 
-      (is (map? ((flatten-stat :mean) benchmark-results))))))
+      (is (map? ((flatten-stat :mean) benchmark-results))))
+    (testing "Test that flattening stats works."
+      (is (map? (flatten-benchmark benchmark-results))))))
