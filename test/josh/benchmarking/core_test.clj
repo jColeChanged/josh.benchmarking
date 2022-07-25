@@ -1,5 +1,5 @@
 (ns josh.benchmarking.core-test
-  (:require [josh.benchmarking.core :refer [->benchmark]])
+  (:require [josh.benchmarking.core :refer [->benchmark flatten-benchmark]])
   (:use clojure.test josh.benchmarking.core))
 
 (def just-addition (fn [] (+ 1 1)))
@@ -35,4 +35,19 @@
   (testing "Testing that we get version information."
     (let [version-information (version-information)]
       (is (:git-id version-information))
-      (is (:timestamp version-information)))))
+      (is (:timestamp version-information))))
+  (testing "Testing that benchmarks can be version stamped"
+    (let [benchmark (-> (list "addition-benchmark" addition-benchmark)
+                        ->benchmark
+                        version-stamp-interceptor)]
+      (is (:git-id benchmark))
+      (is (:timestamp benchmark)))))
+
+
+(deftest test-benchmark-runnable
+  (let [benchmark (->benchmark (list "addition-benchmark" addition-benchmark))
+        benchmark-results (run-benchmark benchmark)]
+    (testing "Tests that a benchmark run returns results"
+      (is (map? benchmark-results)))
+    (testing "Tests that flattening a single stat works." 
+      (is (map? ((flatten-stat :mean) benchmark-results))))))

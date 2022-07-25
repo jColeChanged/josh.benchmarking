@@ -1,10 +1,11 @@
 (ns josh.benchmarking.core
   (:require [clojure.java.shell :refer [sh]]
-            [criterium.core :refer [benchmark report-result]]
-            [tech.v3.dataset :as ds]
-            [tech.v3.dataset.rolling :as ds-roll]
+            [clojure.pprint :as pprint]
             [clojure.string :as string]
-            [taoensso.timbre :as timbre :refer [debug  info]]))
+            [criterium.core :refer [benchmark report-result]]
+            [taoensso.timbre :as timbre :refer [debug info]]
+            [tech.v3.dataset :as ds]
+            [tech.v3.dataset.rolling :as ds-roll]))
   
 
 (defn is-benchmark?
@@ -53,13 +54,14 @@
   [field]
   (fn [coll]
     (-> coll
-        (assoc (label-upper field) (upper coll))
-        (assoc (label-lower field) (lower coll))
-        (assoc field (center coll)))))
+        (assoc (label-upper field) (upper (get coll field)))
+        (assoc (label-lower field) (lower (get coll field)))
+        (assoc field (center (field coll))))))
 
 (defn flatten-benchmark
   "Flattens a benchmark."
   [coll]
+  (pprint/pprint coll)
   (-> coll
       ((flatten-stat :mean))
       ((flatten-stat :sample-mean))
