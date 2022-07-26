@@ -8,9 +8,11 @@
 
 (def benchmark-configuration
   {:database-config {:filename "benchmarks.edn"}
-   :benchmarks [addition-benchmark subtraction-benchmark]
-   :event-interceptors [version-stamp-interceptor]})
- ;;                       flatten-benchmark
+   :benchmarks [{:name "addition-benchmark" 
+                :benchmark addition-benchmark}
+                {:name "subtraction-benchmark"
+                 :benchmark subtraction-benchmark}]
+   :event-interceptors [version-stamp-interceptor flatten-benchmark]})
  ;;                       compare-benchmarks]})
 
 (deftest test-benchmark-detection
@@ -44,7 +46,7 @@
       (is (:timestamp benchmark)))))
 
 
-(deftest test-benchmark-runnable
+(deftest test-single-benchmark-runnable
   (let [benchmark (->benchmark (list "addition-benchmark" addition-benchmark))
         benchmark-results (run-benchmark benchmark)]
     (testing "Tests that a benchmark run returns results"
@@ -53,3 +55,8 @@
       (is (map? ((flatten-stat :mean) benchmark-results))))
     (testing "Test that flattening stats works."
       (is (map? (flatten-benchmark benchmark-results))))))
+
+
+(deftest test-benchmark-config-runnable 
+  (testing "Tests that a benchmark config run returns results"
+    (is (map? (benching benchmark-configuration)))))
