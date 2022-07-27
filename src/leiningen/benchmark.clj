@@ -38,7 +38,6 @@
     (doseq [{:keys [profiles namespaces fixtures]} environments]
       (println "Running benchmarks...")
       (println "======================")
-      (pprint/pprint project)
       (let [project (project/merge-profiles project profiles)
             action `(do
                       (when (seq '~namespaces)

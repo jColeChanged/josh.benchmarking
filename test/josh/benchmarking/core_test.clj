@@ -1,6 +1,17 @@
 (ns josh.benchmarking.core-test
-  (:require [josh.benchmarking.core :refer [->benchmark flatten-benchmark]])
-  (:use clojure.test josh.benchmarking.core))
+  (:require [josh.benchmarking.core :refer [version-stamp-interceptor
+                                            is-benchmark?
+                                            ->benchmark flatten-benchmark
+                                            ns-is-benchmark?
+                                            git-commit-id
+                                            run-benchmark
+                                            timestamp
+                                            flatten-stat
+                                            load-dataset
+                                            version-information
+                                            benching
+                                            write-dataset]]
+            [clojure.test :refer [deftest testing is]])) 
 
 (def just-addition (fn [] (+ 1 1)))
 (def ^:is-benchmark addition-benchmark just-addition)
@@ -60,3 +71,18 @@
 (deftest test-benchmark-config-runnable 
   (testing "Tests that a benchmark config run returns results"
     (is (map? (benching benchmark-configuration)))))
+
+(deftest test-benchmark-loading
+  (testing "Tests that benchmarks can be loaded"
+    (is (load-dataset 
+         {:database-config {:filename "tests/test-benchmarks.edn"}}))))
+
+(defn benchmark-accreter
+  []
+  (write-dataset (benching (load-dataset benchmark-configuration))))
+
+(deftest create-benchmark-dataset
+  (testing "That a benchmark dataset can be generated and saved repeatedly."
+    (dotimes [_ 2]
+      (benchmark-accreter))
+    (is (map? (load-dataset benchmark-configuration)))))
