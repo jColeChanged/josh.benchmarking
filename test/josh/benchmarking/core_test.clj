@@ -10,7 +10,10 @@
                                             load-dataset
                                             version-information
                                             benching
-                                            write-dataset]]
+                                            write-dataset
+                                            create-benchmark-comparison-interceptor
+                                            add-benchmark-comparison-interceptor
+                                            ]]
             [clojure.test :refer [deftest testing is]])) 
 
 (def just-addition (fn [] (+ 1 1)))
@@ -24,7 +27,15 @@
                 {:name "subtraction-benchmark"
                  :benchmark subtraction-benchmark}]
    :event-interceptors [version-stamp-interceptor flatten-benchmark]})
- ;;                       compare-benchmarks]})
+
+
+(def benchmark-configuration-with-dataset
+  {:database-config {:filename "test/test-benchmarks.edn"}
+   :benchmarks [{:name "addition-benchmark" 
+                :benchmark addition-benchmark}
+                {:name "subtraction-benchmark"
+                 :benchmark subtraction-benchmark}]
+   :event-interceptors [version-stamp-interceptor flatten-benchmark]})
 
 (deftest test-benchmark-detection
   (testing "Testing that function which is benchmark is benchmark."
@@ -86,3 +97,14 @@
     (dotimes [_ 2]
       (benchmark-accreter))
     (is (map? (load-dataset benchmark-configuration)))))
+
+(deftest compare-benchmarks
+  (testing "That a benchmark comparison interceptor can be created."
+    (is (create-benchmark-comparison-interceptor
+         (load-dataset
+          {:database-config {:filename "tests/test-benchmarks.edn"}}))))
+  (testing "That a benchmark comparison interceptor can be added to a benchmark config."
+    (is (> (count (:event-interceptors
+                   (add-benchmark-comparison-interceptor
+                    (load-dataset benchmark-configuration-with-dataset))))
+           (count (:event-interceptors benchmark-configuration-with-dataset))))))

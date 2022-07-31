@@ -1,6 +1,5 @@
 (ns josh.benchmarking.core
   (:require [clojure.java.shell :refer [sh]]
-            [clojure.pprint :as pprint]
             [clojure.string :as string]
             [criterium.core :refer [benchmark report-result]]
             [taoensso.timbre :as timbre :refer [debug info]]
@@ -61,7 +60,6 @@
 (defn flatten-benchmark
   "Flattens a benchmark."
   [coll]
-  (pprint/pprint coll)
   (-> coll
       ((flatten-stat :mean))
       ((flatten-stat :sample-mean))
@@ -140,6 +138,14 @@
   (info (local-comparison dataset benchmark))
   benchmark)
 
+(defn create-benchmark-comparison-interceptor
+  [config]
+  (partial compare-benchmarks (:dataset config)))
+
+(defn add-benchmark-comparison-interceptor
+  [config]
+  (update config :event-interceptors conj (create-benchmark-comparison-interceptor config)))
+
 (defn -main
   [settings namespaces] 
   (info :benchmarking-started 
@@ -149,7 +155,6 @@
         {:database-config {:filename "benchmarks.edn"}
          :benchmarks (mapcat collect-benchmarks namespaces)
          :event-interceptors [version-stamp-interceptor
-                              flatten-benchmark
-                              compare-benchmarks]}]
-    (write-dataset
+                              flatten-benchmark]}]
+    (write-dataset  
      (benching (load-dataset benchmark-configuration)))))
