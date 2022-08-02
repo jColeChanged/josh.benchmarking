@@ -120,22 +120,24 @@
 
 (defn recent-comparison
   [dataset new-benchmark]
-  (-> dataset 
-      (ds/group-by :name)
-      (ds-roll/last :mean))
-  new-benchmark)
+  (last (:mean (ds-roll/rolling (get (ds/group-by dataset :name) (get new-benchmark :name))
+                   {:window-type :fixed
+                    :window-size 2
+                    :relative-window-position :left}
+                   {:mean (ds-roll/mean :mean)}))))
 
-(defn local-comparison 
-  [dataset new-benchmark]
-  (-> dataset 
-      (ds/group-by :name)
-      (ds-roll/rolling dataset :mean))
-  new-benchmark)
+;; (defn local-comparison
+;;   [dataset new-benchmark] 
+;;   (:mean (ds-roll/rolling (get new-benchmark "name") (ds/group-by dataset :name))
+;;                    {:window-type :fixed
+;;                     :window-size 10
+;;                     :relative-window-position :left}
+;;                    {:mean (ds-roll/mean :mean)}))
 
-(defn compare-benchmarks 
+(defn compare-benchmarks
   [dataset benchmark]
-  (info (recent-comparison dataset benchmark))
-  (info (local-comparison dataset benchmark))
+  (info "Recent" (recent-comparison dataset benchmark) "vs Just now" (get benchmark :mean))
+  ;;(info (local-comparison dataset benchmark))
   benchmark)
 
 (defn create-benchmark-comparison-interceptor
@@ -157,4 +159,6 @@
          :event-interceptors [version-stamp-interceptor
                               flatten-benchmark]}]
     (write-dataset  
-     (benching (load-dataset benchmark-configuration)))))
+     (benching 
+      (add-benchmark-comparison-interceptor
+       (load-dataset benchmark-configuration))))))

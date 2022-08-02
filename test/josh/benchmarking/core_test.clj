@@ -107,4 +107,7 @@
     (is (> (count (:event-interceptors
                    (add-benchmark-comparison-interceptor
                     (load-dataset benchmark-configuration-with-dataset))))
-           (count (:event-interceptors benchmark-configuration-with-dataset))))))
+           (count (:event-interceptors benchmark-configuration-with-dataset)))))
+  (testing "That benchmark comparison produces printed results." 
+    (is (benching (add-benchmark-comparison-interceptor
+                    (load-dataset benchmark-configuration-with-dataset))))))
