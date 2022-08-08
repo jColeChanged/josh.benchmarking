@@ -55,7 +55,7 @@
   (testing "Testing that we get git commit ids"
     (is (not= (git-commit-id) "")))
   (testing "Testing that we get timestamps"
-    (is (number? (timestamp))))
+    (is (timestamp)))
   (testing "Testing that we get version information."
     (let [version-information (version-information)]
       (is (:git-id version-information))
@@ -94,7 +94,7 @@
 
 (deftest create-benchmark-dataset
   (testing "That a benchmark dataset can be generated and saved repeatedly."
-    (dotimes [_ 2]
+    (dotimes [_ 3]
       (benchmark-accreter))
     (is (map? (load-dataset benchmark-configuration)))))
 

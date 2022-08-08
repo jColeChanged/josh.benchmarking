@@ -6,9 +6,9 @@
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [techascent/tech.ml.dataset "6.091"]
                  [com.taoensso/nippy "3.1.3"]
-                 [com.taoensso/timbre "5.2.1"] ;
+                 [com.taoensso/timbre "5.2.1"]
                  [criterium "0.4.6"]
-                 [metasoarous/oz "2.0.0-alpha5"]]
+                 [techascent/tech.viz "6.00-beta-16-3"]]
   :josh.benchmarking {:benchmark-paths ["benchmarks/"] 
                       :environments [{:namespaces [josh.benchmarking.core]}]}
   :eval-in :leiningen)

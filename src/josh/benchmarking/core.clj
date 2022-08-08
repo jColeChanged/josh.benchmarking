@@ -32,7 +32,7 @@
 
 (defn timestamp
   []
-  (System/currentTimeMillis))
+  (str (java.time.LocalDateTime/now)))
 
 (defn version-information
   []
@@ -97,10 +97,12 @@
 (defn load-dataset
   [config]
   (assoc config :dataset
-         (let [filename (-> config :database-config :filename)]
+         (let [filename (-> config :database-config :filename)
+               parser-configuration {:parser-fn 
+                                     {:timestamp [:packed-local-date-time (fn [data] (java.time.LocalDateTime/parse data))]}}]
            (info :loading filename)
            (when (file? filename)
-             (ds/->dataset filename)))))
+             (ds/->dataset filename parser-configuration)))))
 
 (defn merge-datasets
   [config]
