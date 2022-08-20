@@ -106,17 +106,6 @@ jobs:
 
       - run: lein deps
 
-      - run:
-          name: Setup GPG signing key
-          command: |
-            GNUPGHOME="$HOME/.gnupg"
-            export GNUPGHOME
-            mkdir -p "$GNUPGHOME"
-            chmod 0700 "$GNUPGHOME"
-              echo "$GPG_KEY" \
-               | base64 --decode --ignore-garbage \
-               | gpg --batch --allow-secret-key-import --import
-               gpg --keyid-format LONG --list-secret-keys
       - save_cache:
           paths:
             - ~/.m2
@@ -124,7 +113,4 @@ jobs:
       - run:
          name: Deploy
          command: |
-           GPG_TTY=$(tty)
-           export GPG_TTY
-           echo $GPG_TTY
            ./circle-maybe-deploy.bb lein deploy clojars
