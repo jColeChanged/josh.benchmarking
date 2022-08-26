@@ -11,7 +11,7 @@
 (defn get-benchmark-dependency
   "Returns the plugins entry in the plugins key for this library."
   [project]
-  (let [dep (ffilter #(= `josh.benchmarking/josh.benchmarking (first %)) (:plugins project))]
+  (let [dep (ffilter #(= `org.clojars.joshua/josh.benchmarking (first %)) (:plugins project))]
     (if (nil? dep) [] [dep])))
 
 (defn get-benchmark-sourcepaths [project]
