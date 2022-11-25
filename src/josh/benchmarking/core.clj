@@ -122,24 +122,21 @@
 
 (defn recent-comparison
   [dataset new-benchmark]
-  (last (:mean (ds-roll/rolling (get (ds/group-by dataset :name) (get new-benchmark :name))
-                   {:window-type :fixed
-                    :window-size 2
-                    :relative-window-position :left}
-                   {:mean (ds-roll/mean :mean)}))))
+  (let [group-by-dataset (get (ds/group-by dataset :name) (get new-benchmark :name))]
+    (if (empty? group-by-dataset)
+      nil
+      (last (:mean (ds-roll/rolling group-by-dataset
+                       {:window-type :fixed
+                        :window-size 2
+                        :relative-window-position :left}
+                       {:mean (ds-roll/mean :mean)}))))))
 
-;; (defn local-comparison
-;;   [dataset new-benchmark] 
-;;   (:mean (ds-roll/rolling (get new-benchmark "name") (ds/group-by dataset :name))
-;;                    {:window-type :fixed
-;;                     :window-size 10
-;;                     :relative-window-position :left}
-;;                    {:mean (ds-roll/mean :mean)}))
 
 (defn compare-benchmarks
   [dataset benchmark]
-  (info "Recent" (recent-comparison dataset benchmark) "vs Just now" (get benchmark :mean))
-  ;;(info (local-comparison dataset benchmark))
+  (let [recent-result (recent-comparison dataset benchmark)]
+    (when (not (nil? recent-result))
+      (info "Recent" recent-result "vs Just now" (get benchmark :mean))))
   benchmark)
 
 (defn create-benchmark-comparison-interceptor
