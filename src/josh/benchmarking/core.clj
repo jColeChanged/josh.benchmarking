@@ -146,6 +146,7 @@
   [config]
   (partial compare-benchmarks (:dataset config)))
 
+
 (defn add-benchmark-comparison-interceptor
   [config]
   (update config :event-interceptors conj (create-benchmark-comparison-interceptor config)))

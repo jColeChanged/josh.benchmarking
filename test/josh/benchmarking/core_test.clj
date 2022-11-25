@@ -12,8 +12,8 @@
                                             benching
                                             write-dataset
                                             create-benchmark-comparison-interceptor
-                                            add-benchmark-comparison-interceptor
-                                            ]]
+                                            add-benchmark-comparison-interceptor]]
+                                            
             [clojure.test :refer [deftest testing is]])) 
 
 (def just-addition (fn [] (+ 1 1)))
@@ -23,7 +23,7 @@
 (def benchmark-configuration
   {:database-config {:filename "benchmarks.edn"}
    :benchmarks [{:name "addition-benchmark" 
-                :benchmark addition-benchmark}
+                 :benchmark addition-benchmark}
                 {:name "subtraction-benchmark"
                  :benchmark subtraction-benchmark}]
    :event-interceptors [version-stamp-interceptor flatten-benchmark]})
@@ -32,10 +32,20 @@
 (def benchmark-configuration-with-dataset
   {:database-config {:filename "test/test-benchmarks.edn"}
    :benchmarks [{:name "addition-benchmark" 
-                :benchmark addition-benchmark}
+                 :benchmark addition-benchmark}
                 {:name "subtraction-benchmark"
                  :benchmark subtraction-benchmark}]
    :event-interceptors [version-stamp-interceptor flatten-benchmark]})
+
+
+(def empty-benchmark-configuration-dataset
+  {:database-config {:filename "test/empty-benchmarks.edn"}
+   :benchmarks [{:name "addition-benchmark" 
+                 :benchmark addition-benchmark}
+                {:name "subtraction-benchmark"
+                 :benchmark subtraction-benchmark}]
+   :event-interceptors [version-stamp-interceptor flatten-benchmark]})
+
 
 (deftest test-benchmark-detection
   (testing "Testing that function which is benchmark is benchmark."
@@ -86,7 +96,11 @@
 (deftest test-benchmark-loading
   (testing "Tests that benchmarks can be loaded"
     (is (load-dataset 
-         {:database-config {:filename "tests/test-benchmarks.edn"}}))))
+         {:database-config {:filename "tests/test-benchmarks.edn"}})))
+  (testing "Tests that empty benchmarks can be loaded"
+   (is (load-dataset
+        {:database-config {:filename "tests/empty-benchmarks.edn"}}))))
+  
 
 (defn benchmark-accreter
   []
@@ -108,6 +122,9 @@
                    (add-benchmark-comparison-interceptor
                     (load-dataset benchmark-configuration-with-dataset))))
            (count (:event-interceptors benchmark-configuration-with-dataset)))))
-  (testing "That benchmark comparison produces printed results." 
+  (testing "That benchmark comparison produces printed results."
     (is (benching (add-benchmark-comparison-interceptor
-                    (load-dataset benchmark-configuration-with-dataset))))))
+                   (load-dataset benchmark-configuration-with-dataset)))))
+  (testing "That benchmark doesn't fail to run when empty."
+    (is (benching (add-benchmark-comparison-interceptor
+                   (load-dataset empty-benchmark-configuration-dataset))))))
